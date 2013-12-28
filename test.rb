@@ -1,5 +1,6 @@
 require 'gosu'
-require './player'
+require_relative 'player'
+require_relative 'block'
 
 module ZOrder
 	Background, Stars, Player, UI = *0..3
@@ -23,9 +24,25 @@ class GameWindow < Gosu::Window
 		super(WIDTH, HEIGHT, false)
 		self.caption = TITLE
 
-		@block_color = Gosu::Color.new(0xFFAA0203)
 		@player = Player.new(self)
 		@font = Gosu::Font.new(self, Gosu::default_font_name, 20)
+		@blocks = []
+		init_blocks
+	end
+
+	def init_blocks
+		map = File.open __dir__ + '/map.dat', 'r'
+
+		i = j =0
+		map.each_line do |line|
+			line.each_char do |char|
+				block = Block.new(self, char, j, i)
+				@blocks.push block
+				j += 1
+			end
+			j = 0
+			i += 1
+		end
 	end
 
 	def update
@@ -44,13 +61,13 @@ class GameWindow < Gosu::Window
 
 	def draw
 		draw_background
-		draw_floor
 		@player.draw
-		i = 1
-		@player.inspect.split().each do |string|
-			@font.draw(string, 10, 15*i, ZOrder::UI, 0.8, 0.8, 0xffffff00)
-			i = i + 1
-		end
+		#i = 0
+		#@player.inspect.split().each do |string|
+		#	@font.draw(string, 10, 15*i, ZOrder::UI, 0.8, 0.8, 0xffffff00)
+		#	i = i + 1
+		#end
+		@blocks.each { |block| block.draw }
 	end
 
 	def draw_background
@@ -60,17 +77,6 @@ class GameWindow < Gosu::Window
 				0, HEIGHT, BOTTOM_COLOR,
 				WIDTH, HEIGHT, BOTTOM_COLOR,
 				0)
-	end
-
-	def draw_floor
-		(0..WIDTH/20).each do |i|
-			draw_quad(
-					i*20, HEIGHT, @block_color,
-					i*20+19, HEIGHT, @block_color,
-					i*20, HEIGHT-20, @block_color,
-					i*20+19, HEIGHT-20, @block_color,
-					0)
-		end
 	end
 end
 
