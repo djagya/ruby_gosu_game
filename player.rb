@@ -1,24 +1,22 @@
 class Player
 
+	attr_accessor :vel_x, :vel_y, :on_ground, :y, :x, :color
 	JUMP_POWER = 10
-	GRAVITY = 0.2
+	GRAVITY = 0.35
 
 	def initialize(window)
 		@window = window
 		@color = Gosu::Color.new(0xFF00AAF4)
 		@y = @window.height-20
 		@x = @vel_x = @vel_y = 0.0
-		@angle = 90.0
 		@on_ground = true
 	end
 
 	def accelerate(side)
 		if side == :right
-			@vel_x += Gosu::offset_x(@angle, 0.5)
-			@vel_y += Gosu::offset_y(@angle, 0.5)
+			@vel_x += Gosu::offset_x(90, 0.5)
 		else
-			@vel_x -= Gosu::offset_x(@angle, 0.5)
-			@vel_y -= Gosu::offset_y(@angle, 0.5)
+			@vel_x -= Gosu::offset_x(90, 0.5)
 		end
 	end
 
