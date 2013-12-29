@@ -39,9 +39,10 @@ class Player
 		@x %= @window.width
 		@y %= @window.height
 
-		if @y >= @window.height-20
+		if @y >= @window.height-20 && !@on_ground
 			@on_ground = true
 			@vel_y = 0
+			@image_key[:time] = 0
 		end
 
 		@vel_y = 0 if @vel_y.abs < 0.01
@@ -54,7 +55,7 @@ class Player
 	def draw
 		if @image_key[:time] <= 0
 			@image_key[:value] = @on_ground ? rand(4) : 7-rand(4)
-			@image_key[:time] = rand(300)
+			@image_key[:time] = 50 + rand(150)
 		end
 		@image[@image_key[:value]].draw @x, @y-80, 1
 		@image_key[:time] -= 1
