@@ -35,8 +35,9 @@ class GameWindow < Gosu::Window
 
 		i = j =0
 		map.each_line do |line|
+			line.strip!
 			line.each_char do |char|
-				block = Block.new(self, char, j, i)
+				block = Block.create(self, char, j, i)
 				@blocks.push block
 				j += 1
 			end

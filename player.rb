@@ -6,10 +6,11 @@ class Player
 
 	def initialize(window)
 		@window = window
-		@color = Gosu::Color.new(0xFF00AAF4)
+		@image = Gosu::Image::load_tiles window, "#{__dir__}/images/players/danil.png", 30, 80, true
 		@y = @window.height-20
 		@x = @vel_x = @vel_y = 0.0
 		@on_ground = true
+		@image_key = {value: 0, time: 0}
 	end
 
 	def accelerate(side)
@@ -24,6 +25,7 @@ class Player
 		if @on_ground
 			@vel_y = -Gosu::offset_y(180, JUMP_POWER)
 			@on_ground = false
+			@image_key[:time] = 0
 		end
 	end
 
@@ -50,6 +52,11 @@ class Player
 	end
 
 	def draw
-		@window.draw_triangle(@x, @y, @color, @x, @y-20, @color, @x+20, @y, @color)
+		if @image_key[:time] <= 0
+			@image_key[:value] = @on_ground ? rand(4) : 7-rand(4)
+			@image_key[:time] = rand(300)
+		end
+		@image[@image_key[:value]].draw @x, @y-80, 1
+		@image_key[:time] -= 1
 	end
 end
