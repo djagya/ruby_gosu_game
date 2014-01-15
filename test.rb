@@ -25,7 +25,6 @@ class GameWindow < Gosu::Window
 		self.caption = TITLE
 
 		@player = Player.new(self)
-		@font = Gosu::Font.new(self, Gosu::default_font_name, 20)
 		@blocks = []
 		init_blocks
 	end
@@ -63,11 +62,6 @@ class GameWindow < Gosu::Window
 	def draw
 		draw_background
 		@player.draw
-		#i = 0
-		#@player.inspect.split().each do |string|
-		#	@font.draw(string, 10, 15*i, ZOrder::UI, 0.8, 0.8, 0xffffff00)
-		#	i = i + 1
-		#end
 		@blocks.each { |block| block.draw }
 	end
 
