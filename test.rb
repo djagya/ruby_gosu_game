@@ -1,4 +1,5 @@
 require 'gosu'
+require_relative 'debug'
 require_relative 'player'
 require_relative 'block'
 
@@ -18,6 +19,9 @@ class GameWindow < Gosu::Window
 		if id == Gosu::KbEscape
 			close
 		end
+		if id == Gosu::KbR
+			@player = Player.new(self)
+		end
 	end
 
 	def initialize
@@ -26,6 +30,7 @@ class GameWindow < Gosu::Window
 
 		@player = Player.new(self)
 		@blocks = []
+		@debug = Debug.new(self)
 		init_blocks
 	end
 
@@ -56,11 +61,26 @@ class GameWindow < Gosu::Window
 			@player.jump
 		end
 
+		collide_result = {collide_sides: [], collide: false}
+		collide_result_temp = {collide_sides: [], collide: false}
+		@blocks.each do |block|
+			if block.solid
+				collide_result_temp = @player.collide block
+				if collide_result_temp[:collide]
+					collide_result[:collide] = true
+					collide_result[:collide_sides] << collide_result_temp[:collide_sides]
+				end
+			end
+		end
+		@player.collide_sides = collide_result[:collide_sides].flatten.uniq
+		@player.collide = collide_result[:collide]
+
 		@player.move
 	end
 
 	def draw
 		draw_background
+		@debug.draw_debug @player
 		@player.draw
 		@blocks.each { |block| block.draw }
 	end

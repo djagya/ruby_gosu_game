@@ -6,6 +6,8 @@ class Block
 			air: '.',
 	}
 
+	attr_accessor :x, :y, :solid
+
 	class << self
 		attr_accessor :image
 
@@ -36,6 +38,14 @@ class Block
 
 	def load_image
 		@image ||= Gosu::Image::load_tiles @window, "#{__dir__}/images/blocks/#{self.class.to_s.downcase}.png", BLOCK_SIZE, BLOCK_SIZE, true
+	end
+
+	def width
+		BLOCK_SIZE
+	end
+
+	def height
+		BLOCK_SIZE
 	end
 end
 
