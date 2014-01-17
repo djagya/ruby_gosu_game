@@ -61,21 +61,7 @@ class GameWindow < Gosu::Window
 			@player.jump
 		end
 
-		collide_result = {collide_sides: [], collide: false}
-		collide_result_temp = {collide_sides: [], collide: false}
-		@blocks.each do |block|
-			if block.solid
-				collide_result_temp = @player.collide block
-				if collide_result_temp[:collide]
-					collide_result[:collide] = true
-					collide_result[:collide_sides] << collide_result_temp[:collide_sides]
-				end
-			end
-		end
-		@player.collide_sides = collide_result[:collide_sides].flatten.uniq
-		@player.collide = collide_result[:collide]
-
-		@player.move
+		@player.move @blocks
 	end
 
 	def draw

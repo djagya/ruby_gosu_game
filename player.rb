@@ -1,6 +1,6 @@
 class Player
 
-	attr_accessor :y, :x, :vel_x, :vel_y, :on_ground, :image_key, :collide, :collide_sides
+	attr_accessor :y, :x, :vel_x, :vel_y, :on_ground, :image_key, :collide
 	attr_accessor :image, :image_jump, :image_walk
 	JUMP_POWER = 10
 	GRAVITY = 0.5
@@ -24,7 +24,6 @@ class Player
 		@on_ground = false
 		@image_key = {value: 0, time: 0}
 		@collide = false
-		@collide_sides = []
 	end
 
 	def accelerate(side)
@@ -45,7 +44,7 @@ class Player
 		end
 	end
 
-	def move
+	def move(blocks)
 		# тянем игрока гравитацией, пока он не на земле
 		unless @on_ground
 			@vel_y += GRAVITY
@@ -60,33 +59,15 @@ class Player
 			@image_key[:time] = 0
 		end
 
-		# останавливаем игрока в соответствии с коллизиями
-		if @collide
-			if @collide_sides.include? :left
-				@vel_x = 0 if @vel_x < 0
-				@vel_y = 0 if @vel_y < 0
-			end
-			if @collide_sides.include? :right
-				@vel_x = 0 if @vel_x > 0
-				@vel_y = 0 if @vel_y < 0
-			end
-			if @collide_sides.include? :top
-				@vel_y = 0 if @vel_y < 0
-			end
-			if @collide_sides.include?(:bottom) && !@on_ground
-				@vel_y = 0 if @vel_y > 0
-				@image_key[:time] = 0
-				@on_ground = true
-			end
-		else
-			@on_ground = false
-		end
-
 		# основная смена координат
 		@x += @vel_x
 		@y += @vel_y
 		@x %= @window_size[:width]
 		@y %= @window_size[:height]
+
+		@collide = false
+		blocks.each { |block| collide block if block.solid }
+		@on_ground = false unless @collide
 	end
 
 	def draw
@@ -108,11 +89,11 @@ class Player
 		end
 
 		if @on_ground && @vel_x != 0
-			@image_walk[@image_key[:value]].draw @x, @y-PLAYER_SIZE[:y], 1
+			@image_walk[@image_key[:value]].draw @x, @y, 1
 		elsif @on_ground
-			@image[@image_key[:value]].draw @x, @y-80, 1
+			@image[@image_key[:value]].draw @x, @y, 1
 		elsif !@on_ground
-			@image_jump[@image_key[:value]].draw @x, @y-80, 1
+			@image_jump[@image_key[:value]].draw @x, @y, 1
 		end
 
 		@image_key[:time] -= 1
@@ -120,25 +101,27 @@ class Player
 
 	# @param block [Block]
 	def collide(block)
-		left1 = @x + (width - width * BOUND_SCALE)
+		left1 = @x
 		left2 = block.x
-		right1 = @x + width * BOUND_SCALE
+		right1 = @x + width
 		right2 = block.x + block.width
-		top1 = @y - height * BOUND_SCALE
+		top1 = @y
 		top2 = block.y
-		bottom1 = @y - (height - height * BOUND_SCALE)
+		bottom1 = @y + height
 		bottom2 = block.y + block.height
 
-		collide_result = {collide_sides: [], collide: false}
-
 		if (left1 <= right2 && left1 >= left2) && (top1 <= top2 + block.height/2 && bottom1 >= bottom2 - block.height/2)
-			collide_result[:collide_sides] << :left
-			collide_result[:collide] = true
+			@collide = true
+
+			@vel_x = 0 if @vel_x < 0
+			@x = right2
 		end
 
 		if (right1 >= left2 && right1 <= right2) && (top1 <= top2 + block.height/2 && bottom1 >= bottom2 - block.height/2)
-			collide_result[:collide_sides] << :right
-			collide_result[:collide] = true
+			@collide = true
+
+			@vel_x = 0 if @vel_x > 0
+			@x = left2 - width
 		end
 
 		# инвертированная операция сравнения, потому что Y на координатной сетке считается сверху вниз
@@ -147,20 +130,23 @@ class Player
 				(right1 >= left2 && right1 <= right2) ||
 				(left1 + width/2 >= left2 && left1 + width/2 <= right2)
 		)
-			collide_result[:collide_sides] << :top
-			collide_result[:collide] = true
+			@collide = true
+
+			@vel_y = 0 if @vel_y < 0
+			@y = bottom2
 		end
 
 		if (bottom1 >= top2 && bottom1 <= bottom2) && ((left1 >= left2 && left1 <= right2) ||
 				(right1 >= left2 && right1 <= right2) ||
 				(left1 + width/2 >= left2 && left1 + width/2 <= right2)
 		)
-			collide_result[:collide_sides] << :bottom
-			collide_result[:collide] = true
-			@y = top2
-		end
+			@collide = true
 
-		collide_result
+			@vel_y = 0 if @vel_y > 0
+			@y = top2 - height
+			@image_key[:time] = 0 unless @on_ground
+			@on_ground = true
+		end
 	end
 
 	def width
